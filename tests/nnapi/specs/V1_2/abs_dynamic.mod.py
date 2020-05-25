@@ -47,9 +47,9 @@ dynamic_layer = dynamic_tensor.DynamicInputGenerator(model, model_input_shape)
 test_node_input = dynamic_layer.getTestNodeInput()
 
 # write ABS test. input is `test_input`
-# note output shape is dynamic and not known.
-# However, we need to provide any shape that can hold test output. Otherwise, TestGenerated.cpp will fail
-model_output = Output("output", "TENSOR_FLOAT32", "{1, 6}")
+
+# note output shape is used by expected output's shape
+model_output = Output("output", "TENSOR_FLOAT32", "{1, 2, 3}")
 
 model.Operation("ABS", test_node_input).To(model_output)
 
