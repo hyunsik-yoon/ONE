@@ -48,15 +48,15 @@ void set_input_output(nnfw_session *session, const std::vector<float> &input0,
             NNFW_STATUS_NO_ERROR);
 }
 
-void set_input_output(nnfw_session *session, const std::vector<std::vector<float>*> &inputs,
+void set_input_output(nnfw_session *session, const std::vector<std::vector<float> *> &inputs,
                       std::vector<float> *actual_output)
 {
   for (int i = 0; i < inputs.size(); i++)
   {
     auto *v = inputs.at(i);
-    ASSERT_EQ(nnfw_set_input(session, i, NNFW_TYPE_TENSOR_FLOAT32, v->data(),
-                            sizeof(float) * v->size()),
-              NNFW_STATUS_NO_ERROR);
+    ASSERT_EQ(
+        nnfw_set_input(session, i, NNFW_TYPE_TENSOR_FLOAT32, v->data(), sizeof(float) * v->size()),
+        NNFW_STATUS_NO_ERROR);
   }
 
   ASSERT_EQ(nnfw_set_output(session, 0, NNFW_TYPE_TENSOR_FLOAT32, actual_output->data(),
@@ -226,7 +226,8 @@ TEST_F(TestDynamicTensorReshapeModelLoaded, neg_reshape_multiple_executions)
  * add_ = tf.compat.v1.add(in0_, in1_, name="Add")
  * sub_ = tf.compat.v1.subtract(add_, in2_, name="Sub")
  */
-using TestDynamicTensorUknownDimAs1 = ValidationTestModelLoaded<NNPackages::ADD_SUB_UNKNOWN_DIM_INPUT>;
+using TestDynamicTensorUknownDimAs1 =
+    ValidationTestModelLoaded<NNPackages::ADD_SUB_UNKNOWN_DIM_INPUT>;
 
 TEST_F(TestDynamicTensorUknownDimAs1, without_apply_input_tensorinfo)
 {

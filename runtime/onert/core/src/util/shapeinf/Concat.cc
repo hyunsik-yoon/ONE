@@ -50,7 +50,6 @@ bool validate_dimensions(const Shapes &in_shapes, const ir::operation::Concat::P
   return true;
 }
 
-
 ir::Shape inferConcatShape(const Shapes &in_shapes, const ir::operation::Concat::Param &param)
 {
   const int32_t concat_axis = param.axis >= 0 ? param.axis : in_shapes[0].rank() + param.axis;
@@ -101,7 +100,7 @@ void StaticInferer::visit(const ir::operation::Concat &op)
     }
     else
       throw std::runtime_error(
-        "All tensor should have same dimension except dimension on passed axis");
+          "All tensor should have same dimension except dimension on passed axis");
   }
 
   ir::Shape out_shape = inferConcatShape(input_shapes, op.param());

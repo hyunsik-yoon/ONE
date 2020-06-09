@@ -98,10 +98,7 @@ public:
 
   void couldBeChanged(int axis) { _changeable_dims.emplace(axis); }
 
-  bool couldBeChanged() const
-  {
-    return (_changeable_dims.size() > 0);
-  }
+  bool couldBeChanged() const { return (_changeable_dims.size() > 0); }
 
 private:
   std::vector<int32_t> _dimensions;
