@@ -225,7 +225,7 @@ void Compiler::compile(void)
     dot_dumper.dump(nnfw::misc::str("before_lower_subg-", index.value()));
 
     // mark an input tensor "dynamic" when the tensor has unknown dim
-    setInputToDynamicTensor(subg);
+    // setInputToDynamicTensor(subg);
 
     // Lower: Assign backend
     lowered_subgs[index] = std::make_unique<ir::LoweredGraph>(subg, _options);

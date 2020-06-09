@@ -28,6 +28,8 @@
 #include "ir/operation/RSQRT.h"
 #include "ir/operation/StridedSlice.h"
 #include "ir/Graph.h"
+#include "ir/Shape.h"
+#include "ir/Operands.h"
 #include "ir/Index.h"
 #include "ir/Layout.h"
 #include "ir/OperationVisitor.h"
@@ -80,7 +82,9 @@ ir::Shape inferTransposeShape(const ir::Shape &in_shape, const std::vector<int> 
 
 /**
  * @brief Class to infer shape before running kernels. It does the following:
- *        - re-calculate and set output shape at compile time (before running kernels)
+ *        - re-calculate and set output shape at compile time,
+ *          which means it is before running kernels
+ *          and no static or dynamic memory is allocated for tensors yet.
  *        - if calculation cannot be done at compile time, mark the outputs to be dynamic, meaning
  *          shapes of outputs will be calculated during running kernels
  */

@@ -80,6 +80,7 @@ protected:
   void SetUp() override
   {
     ValidationTestSessionCreated::SetUp();
+    std::cout << "-------" << NNPackages::get().getModelAbsolutePath(PackageNo).c_str() << std::endl;
     ASSERT_EQ(nnfw_load_model_from_file(_session,
                                         NNPackages::get().getModelAbsolutePath(PackageNo).c_str()),
               NNFW_STATUS_NO_ERROR);

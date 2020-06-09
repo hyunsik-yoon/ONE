@@ -216,8 +216,11 @@ int ANeuralNetworksExecution_setOutput(ANeuralNetworksExecution *execution, int3
 
     if (execution->getOperandSize(operand_index) != length)
     {
+      // if (execution->getOperandSize(operand_index) != length)
+      // {
       VERBOSE(NNAPI::Execution) << "setOutput: Invalid length" << std::endl;
       return ANEURALNETWORKS_BAD_DATA;
+      // }
     }
   }
 
@@ -407,8 +410,11 @@ int ANeuralNetworksExecution_setOutputFromMemory(ANeuralNetworksExecution *execu
 
     if (execution->getOperandSize(operand_index) != length)
     {
+      // if (execution->getOperandSize(operand_index) != length)
+      // {
       VERBOSE(NNAPI::Execution) << "setOutputFromMemory: Invalid length" << std::endl;
       return ANEURALNETWORKS_BAD_DATA;
+      // }
     }
   }
 
