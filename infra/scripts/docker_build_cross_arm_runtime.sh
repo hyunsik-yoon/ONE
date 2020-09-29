@@ -42,7 +42,8 @@ pushd $ROOT_PATH > /dev/null
 export DOCKER_ENV_VARS
 export DOCKER_VOLUMES
 CMD="cp -nv Makefile.template Makefile && \
-     make all install build_test_suite"
+     make all install build_test_suite \
+      create_package"
 ./nnfw docker-run bash -c "$CMD"
 
 popd > /dev/null

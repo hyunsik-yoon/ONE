@@ -17,6 +17,42 @@
 #include "nnfw_api_internal.h"
 #include "nnfw_version.h"
 
+#include <android/log.h>
+
+#include <sstream>
+
+struct ALogger
+{
+  void finish()
+  {
+    const char* msg = _sstream.str().c_str();
+    __android_log_print(ANDROID_LOG_INFO, "nnfw_api.h", "%s", msg);
+  }
+
+  // write log
+  template <typename T> ALogger &w(std::string key, T val)
+  {
+    _sstream << key << ": " << val;
+    return *this;
+  }
+
+  // write log with comma
+  template <typename T> ALogger &wc(T entity)
+  {
+    _sstream << entity << ", ";
+    return *this;
+  }
+
+  // write log with comma
+  template <typename T> ALogger &wc(std::string key, T entity)
+  {
+    _sstream << key << ": " << entity << ", ";
+    return *this;
+  }
+
+	std::stringstream _sstream;
+};
+
 // Double-check enum value changes
 
 #define STATIC_ASSERT_ENUM_CHECK(ENUM, VAL) static_assert((ENUM) == (VAL), #ENUM " has changed")
@@ -57,6 +93,8 @@ STATIC_ASSERT_ENUM_CHECK(NNFW_INFO_ID_VERSION, 0);
  */
 NNFW_STATUS nnfw_create_session(nnfw_session **session)
 {
+  ALogger().wc(__func__).w("session", *session).finish();
+
   NNFW_RETURN_ERROR_IF_NULL(session);
 
   *session = new (std::nothrow) nnfw_session();
@@ -73,6 +111,7 @@ NNFW_STATUS nnfw_create_session(nnfw_session **session)
  */
 NNFW_STATUS nnfw_close_session(nnfw_session *session)
 {
+  ALogger().wc(__func__).w("session", session).finish();
   delete session;
   return NNFW_STATUS_NO_ERROR;
 }
@@ -87,6 +126,7 @@ NNFW_STATUS nnfw_close_session(nnfw_session *session)
  */
 NNFW_STATUS nnfw_load_model_from_file(nnfw_session *session, const char *pacakge_file_path)
 {
+  ALogger().wc(__func__).wc("session", session).w("file", pacakge_file_path).finish();
   NNFW_RETURN_ERROR_IF_NULL(session);
   return session->load_model_from_file(pacakge_file_path);
 }
@@ -100,6 +140,7 @@ NNFW_STATUS nnfw_load_model_from_file(nnfw_session *session, const char *pacakge
  */
 NNFW_STATUS nnfw_prepare(nnfw_session *session)
 {
+  ALogger().wc(__func__).w("session", session).finish();
   NNFW_RETURN_ERROR_IF_NULL(session);
   return session->prepare();
 }
@@ -112,18 +153,21 @@ NNFW_STATUS nnfw_prepare(nnfw_session *session)
  */
 NNFW_STATUS nnfw_run(nnfw_session *session)
 {
+  ALogger().wc(__func__).w("session", session).finish();
   NNFW_RETURN_ERROR_IF_NULL(session);
   return session->run();
 }
 
 NNFW_STATUS nnfw_run_async(nnfw_session *session)
 {
+  ALogger().wc(__func__).w("session", session).finish();
   NNFW_RETURN_ERROR_IF_NULL(session);
   return session->run_async();
 }
 
 NNFW_STATUS nnfw_await(nnfw_session *session)
 {
+  ALogger().wc(__func__).w("session", session).finish();
   NNFW_RETURN_ERROR_IF_NULL(session);
   return session->await();
 }
@@ -143,6 +187,10 @@ NNFW_STATUS nnfw_await(nnfw_session *session)
 NNFW_STATUS nnfw_set_input(nnfw_session *session, uint32_t index, NNFW_TYPE type,
                            const void *buffer, size_t length)
 {
+  ALogger().wc(__func__).wc("session", session)
+           .wc("index", index).wc("type", type).wc("buffer", buffer)
+           .w("length", length).finish();
+
   NNFW_RETURN_ERROR_IF_NULL(session);
   return session->set_input(index, type, buffer, length);
 }
@@ -162,6 +210,10 @@ NNFW_STATUS nnfw_set_input(nnfw_session *session, uint32_t index, NNFW_TYPE type
 NNFW_STATUS nnfw_set_output(nnfw_session *session, uint32_t index, NNFW_TYPE type, void *buffer,
                             size_t length)
 {
+  ALogger().wc(__func__).wc("session", session)
+           .wc("index", index).wc("type", type).wc("buffer", buffer)
+           .w("length", length).finish();
+
   NNFW_RETURN_ERROR_IF_NULL(session);
   return session->set_output(index, type, buffer, length);
 }
@@ -178,7 +230,11 @@ NNFW_STATUS nnfw_set_output(nnfw_session *session, uint32_t index, NNFW_TYPE typ
 NNFW_STATUS nnfw_input_size(nnfw_session *session, uint32_t *number)
 {
   NNFW_RETURN_ERROR_IF_NULL(session);
-  return session->input_size(number);
+  auto ret = session->input_size(number);
+
+  ALogger().wc(__func__).wc("session", session).w("number", *number).finish();
+
+  return ret;
 }
 
 /*
@@ -192,7 +248,11 @@ NNFW_STATUS nnfw_input_size(nnfw_session *session, uint32_t *number)
 NNFW_STATUS nnfw_output_size(nnfw_session *session, uint32_t *number)
 {
   NNFW_RETURN_ERROR_IF_NULL(session);
-  return session->output_size(number);
+  auto ret = session->output_size(number);
+
+  ALogger().wc(__func__).wc("session", session).w("number", *number).finish();
+
+  return ret;
 }
 
 /*
@@ -240,7 +300,13 @@ NNFW_STATUS nnfw_input_tensorinfo(nnfw_session *session, uint32_t index,
                                   nnfw_tensorinfo *tensor_info)
 {
   NNFW_RETURN_ERROR_IF_NULL(session);
-  return session->input_tensorinfo(index, tensor_info);
+  auto ret = session->input_tensorinfo(index, tensor_info);
+
+  ALogger().wc(__func__).wc("session", session).wc("index", index)
+           .wc("rank", tensor_info->rank)
+           .wc("dims[0]", tensor_info->dims[0]).finish();
+
+  return ret;
 }
 
 /*
@@ -256,7 +322,13 @@ NNFW_STATUS nnfw_output_tensorinfo(nnfw_session *session, uint32_t index,
                                    nnfw_tensorinfo *tensor_info)
 {
   NNFW_RETURN_ERROR_IF_NULL(session);
-  return session->output_tensorinfo(index, tensor_info);
+  auto ret = session->output_tensorinfo(index, tensor_info);
+
+  ALogger().wc(__func__).wc("session", session).wc("index", index)
+           .wc("rank", tensor_info->rank)
+           .wc("dims[0]", tensor_info->dims[0]).finish();
+
+  return ret;
 }
 
 /*
@@ -276,6 +348,10 @@ NNFW_STATUS nnfw_register_custom_op_info(nnfw_session *session, const char *id,
 NNFW_STATUS nnfw_apply_tensorinfo(nnfw_session *session, uint32_t index,
                                   nnfw_tensorinfo tensor_info)
 {
+  ALogger().wc(__func__).wc("session", session)
+           .wc("index", index).wc("rank", tensor_info.rank)
+           .w("dim[0]: ", tensor_info.dims[0]).finish();
+
   NNFW_RETURN_ERROR_IF_NULL(session);
   return session->apply_tensorinfo(index, tensor_info);
 }
@@ -283,6 +359,9 @@ NNFW_STATUS nnfw_apply_tensorinfo(nnfw_session *session, uint32_t index,
 NNFW_STATUS nnfw_set_input_tensorinfo(nnfw_session *session, uint32_t index,
                                       const nnfw_tensorinfo *tensor_info)
 {
+  ALogger().wc(__func__).wc("session", session)
+           .wc("index", index).wc("rank", tensor_info->rank)
+           .w("dim[0]: ", tensor_info->dims[0]).finish();
   NNFW_RETURN_ERROR_IF_NULL(session);
   return session->set_input_tensorinfo(index, tensor_info);
 }
@@ -295,6 +374,8 @@ NNFW_STATUS nnfw_set_input_tensorinfo(nnfw_session *session, uint32_t index,
  */
 NNFW_STATUS nnfw_set_available_backends(nnfw_session *session, const char *backends)
 {
+  ALogger().wc(__func__).wc("session", session).w("backends", backends).finish();
+
   NNFW_RETURN_ERROR_IF_NULL(session);
   return session->set_available_backends(backends);
 }

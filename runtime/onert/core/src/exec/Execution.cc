@@ -34,10 +34,6 @@ Execution::Execution(const std::shared_ptr<ExecutorMap> &executors) : _executors
 
 void Execution::changeInputShape(const ir::IOIndex &index, const ir::Shape &new_shape)
 {
-  // This should be called BEFORE setInput.
-  if (_io_desc.inputs.at(index.value()) != 0)
-    throw std::runtime_error("Error in calling order");
-
   _io_desc.input_shape_signature[index] = new_shape;
 }
 
