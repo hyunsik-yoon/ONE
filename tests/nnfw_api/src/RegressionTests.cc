@@ -62,3 +62,75 @@ TEST_F(RegressionTest, neg_github_3826)
   ASSERT_EQ(nnfw_prepare(session), NNFW_STATUS_ERROR);
   NNFW_ENSURE_SUCCESS(nnfw_close_session(session));
 }
+
+TEST_F(RegressionTest, nnstreamer_consecutive_calls_on_dynamic_model)
+{
+  CircleGen cgen;
+  int in = cgen.addTensor({{}, circle::TensorType::TensorType_FLOAT32});
+  int out = cgen.addTensor({{}, circle::TensorType::TensorType_FLOAT32});
+  cgen.addOperatorAdd({{in, in}, {out}}, circle::ActivationFunctionType_NONE);
+  cgen.setInputsAndOutputs({in}, {out});
+  auto cbuf = cgen.finish();
+
+  // the following is the order that nnstreamer team creates their test case
+  // (except nnfw_load_circle_from_buffer, and backends is "cpu;bcq")
+  nnfw_session *session = nullptr;
+  NNFW_ENSURE_SUCCESS(nnfw_create_session(&session));
+  NNFW_ENSURE_SUCCESS(nnfw_load_circle_from_buffer(session, cbuf.buffer(), cbuf.size()));
+  // To test when there is no backends loaded for the session
+  NNFW_ENSURE_SUCCESS(nnfw_set_available_backends(session, "cpu"));
+  NNFW_ENSURE_SUCCESS(nnfw_prepare(session));
+
+  uint32_t input_num = -1;
+  NNFW_ENSURE_SUCCESS(nnfw_input_size(session, &input_num));
+
+  nnfw_tensorinfo t_input;
+  NNFW_ENSURE_SUCCESS(nnfw_input_tensorinfo(session, 0, &t_input));
+
+  uint32_t output_num = -1;
+  NNFW_ENSURE_SUCCESS(nnfw_output_size(session, &output_num));
+
+  nnfw_tensorinfo t_output;
+  NNFW_ENSURE_SUCCESS(nnfw_output_tensorinfo(session, 0, &t_output));
+
+  for (int32_t new_dim = 1; new_dim <= 4; new_dim++)
+  {
+    std::cout << "new dim is " << new_dim << std::endl;
+
+    nnfw_tensorinfo t_new_input;
+    t_new_input.dtype = t_input.dtype;
+    t_new_input.rank = 1;
+    t_new_input.dims[0] = new_dim;
+    NNFW_ENSURE_SUCCESS(nnfw_set_input_tensorinfo(session, 0, &t_new_input));
+
+    NNFW_ENSURE_SUCCESS(nnfw_input_size(session, &input_num));
+    NNFW_ENSURE_SUCCESS(nnfw_input_tensorinfo(session, 0, &t_input));
+
+    ASSERT_EQ(input_num, 1);
+    ASSERT_EQ(t_input.rank, t_new_input.rank);
+    ASSERT_EQ(t_input.dims[0], new_dim);
+
+    uint8_t input_buf[new_dim*sizeof(float)];
+    NNFW_ENSURE_SUCCESS(nnfw_set_input(session, 0, t_input.dtype, &input_buf, new_dim*sizeof(float)));
+
+    uint8_t output_buf[new_dim*sizeof(float)];
+    NNFW_ENSURE_SUCCESS(nnfw_set_output(session, 0, t_output.dtype, &output_buf, new_dim*sizeof(float)));
+
+    NNFW_ENSURE_SUCCESS(nnfw_run(session));
+
+    NNFW_ENSURE_SUCCESS(nnfw_output_size(session, &output_num));
+    NNFW_ENSURE_SUCCESS(nnfw_output_tensorinfo(session, 0, &t_output));
+
+    ASSERT_EQ(output_num, 1);
+    ASSERT_EQ(t_output.rank, t_new_input.rank);
+    ASSERT_EQ(t_output.dims[0], new_dim); // --> this is where the test fails when new_dim == 2
+
+    // seems weird calling but anyway nnstreamer test case calls this again.
+    // Anyways, runtime should work
+    NNFW_ENSURE_SUCCESS(nnfw_set_input(session, 0, t_input.dtype, &input_buf, new_dim*sizeof(float)));
+    NNFW_ENSURE_SUCCESS(nnfw_set_output(session, 0, t_output.dtype, &output_buf, new_dim*sizeof(float)));
+    NNFW_ENSURE_SUCCESS(nnfw_run(session));
+  }
+
+  NNFW_ENSURE_SUCCESS(nnfw_close_session(session));
+}

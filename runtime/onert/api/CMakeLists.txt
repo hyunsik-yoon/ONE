@@ -13,6 +13,15 @@ target_link_libraries(${ONERT_DEV} PUBLIC onert_core)
 target_link_libraries(${ONERT_DEV} PRIVATE jsoncpp tflite_loader circle_loader ${LIB_PTHREAD})
 target_link_libraries(${ONERT_DEV} PRIVATE nnfw_common)
 target_link_libraries(${ONERT_DEV} PRIVATE nnfw_coverage)
+
+# Android Only
+find_library(LIBANDROID_LOG NAMES liblog.so
+                        PATHS /home/eric/dev/one_build_android_ndk/ndk/platforms/android-27/arch-arm64/usr/lib
+                        REQUIRED)
+message(STATUS "${LIBANDROID_LOG}" )
+target_link_libraries(${ONERT_DEV} PUBLIC ${LIBANDROID_LOG})
+
+
 target_include_directories(${ONERT_DEV} PUBLIC include)
 set_target_properties(${ONERT_DEV} PROPERTIES PUBLIC_HEADER "${NNFW_API_HEADERS}")
 

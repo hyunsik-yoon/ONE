@@ -27,7 +27,7 @@ int main(int argc, char **argv)
 
   try
   {
-    NNPackages::get().checkAll();
+    //NNPackages::get().checkAll();
   }
   catch (std::runtime_error &e)
   {

@@ -34,9 +34,6 @@ Execution::Execution(const std::shared_ptr<ExecutorMap> &executors) : _executors
 
 void Execution::changeInputShape(const ir::IOIndex &index, const ir::Shape &new_shape)
 {
-  // This will be used later to set input tensor dynamic
-  // Note that 'compiled' model will not be updated with new_shape
-  // but new_shape will change model input shape while 'running' the model
   _io_desc.dynamic_input_shapes[index] = new_shape;
 }
 

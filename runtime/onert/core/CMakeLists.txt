@@ -14,6 +14,16 @@ target_link_libraries(onert_core PRIVATE dl ${LIB_PTHREAD})
 target_link_libraries(onert_core PRIVATE jsoncpp)
 target_link_libraries(onert_core INTERFACE ruy_instrumentation)
 
+# Android Only
+target_link_libraries(onert_core PUBLIC ${LIBANDROID})
+
+find_library(LIBANDROID_LOG NAMES liblog.so
+                        PATHS /home/eric/dev/one_build_android_ndk/ndk/platforms/android-27/arch-arm64/usr/lib
+                        REQUIRED)
+message(STATUS "${LIBANDROID_LOG}" )
+target_link_libraries(onert_core PUBLIC ${LIBANDROID_LOG})
+
+
 if(ENVVAR_ONERT_CONFIG)
   target_compile_definitions(onert_core PRIVATE ENVVAR_FOR_DEFAULT_CONFIG)
 endif(ENVVAR_ONERT_CONFIG)
